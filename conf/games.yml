@@ -1,0 +1,11 @@
+---
+connections:
+  pgsql:
+    uri: "postgres://games:password@db/games"
+  celery:
+    uri: "redis://redis:6379/0"
+debug: true
+api_docs_enabled: true
+static_root: "/var/games/static"
+media_root: "/var/games/storage/media"
+secret_key: "6$!5yq0$q(sj^8%ap(^7yu@e)pejsf=lr7_c5q9n+2hsg(77xg123dsadasd"

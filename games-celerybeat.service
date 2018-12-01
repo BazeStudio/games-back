@@ -1,0 +1,22 @@
+[Unit]
+Description=CeleryBeat for games
+After=network.target network-online.target games-celery.service postgresql-9.6.service
+Wants=network-online.target
+Requires=games-celery.service
+
+[Service]
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/run/games
+ExecStartPre=/bin/chown -R games:games /var/run/games /var/log/games
+EnvironmentFile=/etc/games.env
+ExecStart=/usr/local/nic/games/bin/celery beat -A games -s /var/run/games/celerybeat-schedule --pidfile=/var/run/games/celerybeat.pid -f /var/log/games/celery-beat.log
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+StandardError=syslog
+KillSignal=SIGQUIT
+User=games
+Group=games
+
+[Install]
+WantedBy=multi-user.target

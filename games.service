@@ -1,0 +1,26 @@
+[Unit]
+Description=uWSGI instance to serve games application
+After=syslog.target
+
+[Service]
+EnvironmentFile=/etc/games.env
+ExecStart=/usr/local/nic/games/bin/uwsgi --module games.wsgi:application --master --socket $games_wsgisock --chmod-socket=666 --workers 4 --uid games --gid games --harakiri 60 \
+ --max-requests 1000 -b 32768 --log-x-forwarded-for --logto=/var/log/games/uwsgi.log
+
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -INT $MAINPID
+
+KillSignal=SIGQUIT
+
+Restart=always
+User=games
+Group=games
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=games
+
+OOMScoreAdjust=-100
+
+[Install]
+WantedBy=multi-user.target

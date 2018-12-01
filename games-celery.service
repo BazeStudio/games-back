@@ -1,0 +1,39 @@
+[Unit]
+Description=Celery for games.
+After=network.target network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+PermissionsStartOnly=true
+EnvironmentFile=/etc/games.env
+Environment=CELERY_BIN=/usr/local/nic/games/bin/celery
+Environment=CELERY_PID=/var/run/games/celery.pid
+Environment=CELERY_LOG=/var/log/games/celery.log
+Environment=CELERY_WORKERS="worker"
+Environment=CELERY_CUNCURRENCY=4
+ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERY_WORKERS} \
+    -A games \
+    -c ${CELERY_CUNCURRENCY} \
+    --pidfile=${CELERY_PID} \
+    --loglevel=INFO \
+    --logfile=${CELERY_LOG}'
+ExecReload=/bin/sh -c '${CELERY_BIN} multi restart ${CELERY_WORKERS} \
+    -A games \
+    -c ${CELERY_CUNCURRENCY} \
+    --pidfile=${CELERY_PID} \
+    --loglevel=INFO \
+    --logfile=${CELERY_LOG}'
+ExecStop=/bin/sh -c '${CELERY_BIN} multi stopwait ${CELERY_WORKERS} \
+    --pidfile=${CELERY_PID}'
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=games-celery
+User=games
+Group=games
+
+OOMScoreAdjust=100
+
+[Install]
+WantedBy=multi-user.target

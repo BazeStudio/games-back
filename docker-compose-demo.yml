@@ -1,0 +1,75 @@
+# dev configuration
+version: '2'
+
+services:
+
+
+  db:
+    image: postgres:9.6.5
+    env_file: "./conf/games.env"
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    ports:
+      - "5432"
+
+
+  web:
+    env_file: "./conf/games.env"
+    build: .
+    links:
+      - db:db
+      - redis:redis
+    volumes:
+      - "/var/log/games"
+      - "./src:/code"
+      - "./conf:/conf:ro"
+      - "./scripts:/scripts:ro"
+      - "/var/games/static"
+      - "/home/pavel/storage/games_media:/var/games/storage/media"
+    ports:
+      - "80:8080"
+    depends_on:
+      - db
+      - redis
+    command: [ "/bin/bash", "/scripts/entry.sh" ]
+
+
+  redis:
+    image: redis:4.0.2
+    volumes:
+      - "redisdata:/data"
+    ports:
+      - "6379"
+
+
+  celery:
+    env_file: "./conf/games.env"
+    build: .
+    links:
+      - db:db
+      - redis:redis
+    volumes_from:
+      - "web"
+    command: [ "pipenv", "run", "celery", "worker", "-A", "games", "-l", "info"]
+    depends_on:
+      - "redis"
+      - "db"
+
+
+  celery_beat:
+    env_file: "./conf/games.env"
+    build: .
+    links:
+      - db:db
+      - redis:redis
+    volumes_from:
+      - "web"
+    command: [ "pipenv", "run", "celery", "beat", "-A", "games", "-l", "info"]
+    depends_on:
+      - "redis"
+      - "db"
+
+
+volumes:
+  pgdata:
+  redisdata:

@@ -1,0 +1,26 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+{% block field_sets %}
+
+<style>
+
+    .related-widget-wrapper-link:link {
+        visibility: hidden;
+    }
+
+
+    label {
+        font-weight: bold;
+        color: #333;
+        font-size: 13px;
+    }
+
+    form label {font-weight:bold}
+}
+</style>
+
+{% for fieldset in adminform %}
+    {% include "admin/includes/fieldset.html" %}
+{% endfor %}
+
+{% endblock %}

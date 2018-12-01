@@ -1,0 +1,34 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+dj-database-url = "*"
+django-debug-toolbar = "*"
+django-extensions = "*"
+django = "*"
+"psycopg2-binary" = "*"
+strictyaml = "*"
+coreapi = "*"
+pytz = "*"
+requests = "*"
+pyyaml = "*"
+djangorestframework = "*"
+djangorestframework-xml = "*"
+celery = "*"
+redis = "*"
+uwsgi = "*"
+django-request-logging = "*"
+pillow = "*"
+django-rest-swagger = "*"
+django-modeladmin-reorder = "*"
+django-rest-auth = "*"
+django-allauth = "*"
+django-admin-tools = "*"
+django-fluent-dashboard = "*"
+
+[requires]
+python_version = "3.6"
+
+[dev-packages]

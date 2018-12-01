@@ -1,0 +1,207 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+<style>
+
+/* Hide rows after page is loaded*/
+.tbody-collapse {
+  display: none
+}
+
+/* Set constant width to caption */
+.caption-collapse {
+  width: 585px;
+}
+
+/* Make captions look like big long buttons */
+.caption-collapse:hover {
+  background: #669fbb;
+  cursor: pointer;
+}
+
+/* Animated arrow in the right of the caption*/
+.collapse-icon {
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  margin-right: 5px;
+  margin-top: 5px;
+  float: right;
+}
+
+/* Button to expand/collapse all lines */
+.collapse-button {
+  position: absolute;
+  left: 565px;
+  top: 86px;
+  cursor: pointer;
+  color: #417690;
+}
+
+/* Make this button to look like link */
+.collapse-button:hover {
+  text-decoration: underline;
+}
+
+/* Arrow icon */
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #fff;
+}
+
+</style>
+
+{% block extrastyle %}{{ block.super }}
+<!-- Default Django CSS -->
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />
+{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<!-- JQuery 3.2.1 -->
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
+<script>
+
+$(document).ready(function() {
+  // Method to rotate element
+  $.fn.rotate = function(degrees) {
+    $(this).css({
+      '-webkit-transform': 'rotate(' + degrees + 'deg)',
+      '-moz-transform': 'rotate(' + degrees + 'deg)',
+      '-ms-transform': 'rotate(' + degrees + 'deg)',
+      'transform': 'rotate(' + degrees + 'deg)'
+    });
+    return $(this);
+  };
+
+  // Call JS only if user is on index page (index page has "content-related")
+  if ($('#content-related').length) {
+
+    // Collapse all elements at the page load
+    // NOTE: You can remove it to make all sections expanded by default
+    $('.tbody-collapse')
+    .find('td, th')
+    .wrapInner('<div />')
+    .animate({
+      'padding-top': '0px',
+      'padding-bottom': '0px'
+    })
+    .children()
+    .slideUp();
+
+    // Button to expand/collapse all lines
+    $(".collapse-button").on("click", function() {
+      if ($('.collapse-button').html() == 'Expand all') {
+        $('.tbody-collapse').show();
+        $('.tbody-collapse')
+          .find('td, th')
+          .animate({
+            'padding-top': '8px',
+            'padding-bottom': '8px'
+          })
+          .children()
+          .slideDown(250);
+        $('.collapse-button').html('Collapse all');
+        $('.collapse-icon').rotate(180);
+      } else {
+        $('.tbody-collapse')
+          .find('td, th')
+          .wrapInner('<div />')
+          .animate({
+            'padding-top': '0px',
+            'padding-bottom': '0px'
+          })
+          .children()
+          .slideUp(300, function() {
+            $('.tbody-collapse').hide();
+          });
+        $('.collapse-button').html('Expand all');
+        $('.collapse-icon').rotate(0);
+      }
+    });
+
+    // Method to expand/collapse specified line
+    $(".caption-collapse").on("click", function() {
+      var $icon = $(this).children('.collapse-icon');
+      var $tbody = $(this).nextAll(".tbody-collapse:first");
+      console.log($tbody.is(':visible'));
+      if ($tbody.is(':visible')) {
+        $tbody
+          .find('td, th')
+          .wrapInner('<div />')
+          .animate({
+            'padding-top': '0px',
+            'padding-bottom': '0px'
+          })
+          .children()
+          .slideUp(300, function() {
+            $tbody.hide();
+          });
+        $icon.rotate(0);
+      } else {
+        $tbody.show();
+        $tbody
+          .find('td, th')
+          .animate({
+            'padding-top': '8px',
+            'padding-bottom': '8px'
+          })
+          .children()
+          .slideDown(250);;
+        $icon.rotate(180);
+      }
+    });
+  }
+
+});
+</script>
+
+{% endblock %}
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+{% include 'entities/foldable_admin.html' %}
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% trans 'Recent actions' %}</h2>
+        <h3>{% trans 'My actions' %}</h3>
+            {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+            <p>{% trans 'None available' %}</p>
+            {% else %}
+            <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br/>
+                {% if entry.content_type %}
+                    <span class="mini quiet">{% filter capfirst %}{{ entry.content_type }}{% endfilter %}</span>
+                {% else %}
+                    <span class="mini quiet">{% trans 'Unknown content' %}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+    </div>
+</div>
+{% endblock %}
