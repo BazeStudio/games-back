@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-
+import re
 
 def validate_file_extension(value):
     import os
@@ -17,3 +17,16 @@ def validate_file_size(value):
         raise ValidationError("The maximum file size that can be uploaded is 10MB")
     else:
         return value
+
+
+class ComplexPasswordValidator:
+    """
+    Validate whether the password contains minimum one uppercase, one digit and one symbol.
+    """
+    def validate(self, password, user=None):
+        if re.search('([A-Za-z]+[0-9]|[0-9]+[A-Za-z])[A-Za-z0-9]*', password) is None:
+            raise ValidationError("Пароль не удовлетворяет требованиям",
+            )
+
+    def get_help_text(self):
+        return 'Ваш пароль должен содержать как минимум 1 цифру и 1 букву'

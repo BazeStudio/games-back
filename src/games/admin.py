@@ -10,7 +10,6 @@ from . import models
 
 logger = logging.getLogger(__name__)
 
-# admin.site.index_template = 'entities/app_index.html'
 
 admin.site.site_header = "Админ-панель Kit4Kid"
 admin.site.site_title = "Портал Админ-панель Kit4Kid"
@@ -19,7 +18,8 @@ admin.site.index_title = "Добро пожаловать в админ-пане
 admin.site.unregister(Site)
 admin.site.unregister(Group)
 
-apps.get_app_config('games').verbose_name = 'Массив изображений 1'
+
+apps.get_app_config('games').verbose_name = ''
 
 
 class StaffRequiredAdminMixin(object):
@@ -50,7 +50,6 @@ class StaffRequiredAdminMixin(object):
 
 @admin.register(models.User)
 class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
-    # TODO: exlcude 'staff status'
 
     fields = [
         'username',
@@ -62,7 +61,7 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'surname',
     ]
 
-    readonly_fields = ['link_to_child']
+    readonly_fields = ['link_to_child', 'date_joined']
 
     def link_to_child(self, obj):
         if obj:
@@ -116,6 +115,7 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('child__name__icontains', )
+    list_display = ('child', 'game', 'level', 'correct_percentage')
 
     def has_add_permission(self, request):
         if not request.user.is_superuser:
@@ -123,6 +123,16 @@ class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
         return True
 
     def has_change_permission(self, request, obj=None):
+        if not request.user.is_superuser:
+            return False
+        return True
+
+    def has_module_permission(self, request):
+        if not request.user.is_superuser:
+            return False
+        return True
+
+    def has_view_permission(self, request, obj=None):
         if not request.user.is_superuser:
             return False
         return True
@@ -152,7 +162,7 @@ class CategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 @admin.register(models.Color)
 class ColorAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
-    search_fields = ('color', )
+    search_fields = ('color', 'description')
 
     def check_perm(self, user_obj):
         return True
@@ -255,6 +265,42 @@ class RuleAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
         return super().get_readonly_fields(request, obj)
 
 
+@admin.register(models.Game_2_Obj_Level_1)
+class Game2Level1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
+    search_fields = ('description', )
+    exclude = ('last_changed',)
+
+    def check_perm(self, user_obj):
+        return True
+
+
+@admin.register(models.Game_2_Obj_Level_2)
+class Game2Level2Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
+    search_fields = ('description',)
+    exclude = ('last_changed',)
+
+    def check_perm(self, user_obj):
+        return True
+
+
+@admin.register(models.Game_2_Obj_Level_3)
+class Game2Level3Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
+    search_fields = ('description',)
+    exclude = ('last_changed',)
+
+    def check_perm(self, user_obj):
+        return True
+
+
+@admin.register(models.Game_3_Obj)
+class Game3(StaffRequiredAdminMixin, admin.ModelAdmin):
+    search_fields = ('verb', )
+    exclude = ('last_changed',)
+
+    def check_perm(self, user_obj):
+        return True
+
+
 @admin.register(models.Game_1_obj)
 class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     change_list_template = 'entities/game_one_list.html'
@@ -274,6 +320,7 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'functional_question',
         'compound_question',
         'definition_question',
+        'description_eng'
     ]
 
     readonly_fields = ['bold_description', 'pic', 'hint_audio',]
@@ -288,6 +335,7 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
                     'functional_question',
                     'compound_question',
                     'definition_question',
+                    'description_eng',
                     )
 
     def bold_description(self, obj):
@@ -365,31 +413,15 @@ class AdminChild(StaffRequiredAdminMixin, admin.ModelAdmin):
         'name',
         'birthday',
         'gender',
-        'photo',
         'parent',
-
     ]
 
     list_display = ('name', 'parent', )
     search_fields = ('parent__name', 'parent__surname', )
 
-    readonly_fields = ['pic']
-
-    def pic(self, obj):
-        return mark_safe(
-            '<img src="{url}" width="{width}" height={height} />'.format(
-                url=obj.photo.url,
-                width=obj.photo.width,
-                height=obj.photo.height,
-            )
-        )
-
-    pic.short_description = 'Фотография'
-    pic.allow_tags = True
-
     def get_fields(self, request, obj=None):
         if obj:
-            return self.fields + ['pic']
+            return self.fields
 
         return self.fields
 
@@ -405,4 +437,3 @@ class AdminChild(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     def check_perm(self, user_obj):
         return True
-

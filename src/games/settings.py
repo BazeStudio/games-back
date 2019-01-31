@@ -13,6 +13,7 @@ import dj_database_url
 
 from .config import config as devops_config
 import mimetypes
+from google.oauth2 import service_account
 
 mimetypes.add_type("image/svg+xml", ".svg", True)
 mimetypes.add_type("image/svg+xml", ".svgz", True)
@@ -76,6 +77,11 @@ INSTALLED_APPS = [
 
 ]
 
+# DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+# GS_BUCKET_NAME = 'kit4kid'
+# GS_CREDENTIALS = service_account.Credentials.from_service_account_file("/conf/credentials.json")
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -85,49 +91,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', )
 }
 
-# ADMIN_TOOLS_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentIndexDashboard'
-# ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentAppIndexDashboard'
-# ADMIN_TOOLS_MENU = 'fluent_dashboard.menu.FluentMenu'
-
-# FLUENT_DASHBOARD_APP_GROUPS = (
-#
-#     ('Параметры', {
-#         'models': (
-#             'games.models.Form',
-#             'games.models.Category',
-#             'games.models.Color',
-#             'games.models.FunctionalQuestion',
-#             'games.models.CompoundQuestion',
-#             'games.models.DefinitionQuestion',
-#             'games.models.Material',
-#             'games.models.SubCategory',
-#             'games.models.Quantity',
-#
-#         ),
-#         'collapsible': True,
-#     }),
-#
-#     ('Массивы изображений', {
-#         'models': ('games.models.Game_1_obj',),
-#         'collapsible': True,
-#     }),
-#
-#
-#     ('Пользователи', {
-#         'models': (
-#             'games.models.User',
-#             'games.models.Child',
-#             'games.models.Statistic'
-#         ),
-#         'collapsible': True,
-#     }),
-#
-#     ('Правила', {
-#         'models': ('games.models.Rule',),
-#         'collapsible': True,
-#     }),
-#
-# )
+EMAIL_HOST = 'mail.nic.ru'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'info@kit-4-kid.com'
+EMAIL_HOST_PASSWORD = 'xS1f3ASehZ'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ADMIN_REORDER = (
 
@@ -142,11 +111,28 @@ ADMIN_REORDER = (
 
 
     {
-        'app': 'games', 'label': 'Массивы изображений',
+        'app': 'games', 'label': 'Массивы изображений игр № 1, 2, 3',
         'models': (
             'games.Game_1_obj',
         )
     },
+
+    {
+        'app': 'games', 'label': 'Группы изображений игры № 4',
+        'models': (
+            'games.Game_2_Obj_Level_1',
+            'games.Game_2_Obj_Level_2',
+            'games.Game_2_Obj_Level_3',
+        )
+    },
+
+    {
+        'app': 'games', 'label': 'Массив изображений игры № 5',
+        'models': (
+            'games.Game_3_Obj',
+        )
+    },
+
 
     {
         'app': 'games', 'label': 'Параметры массива №1',
@@ -246,12 +232,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'OPTIONS': {
+            'min_length': 4,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+    {
+        'NAME': 'games.validators.ComplexPasswordValidator',
     },
 ]
 
@@ -260,7 +249,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'ru-ru'
 # LANGUAGE_CODE = 'en-en'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -350,3 +339,17 @@ else:
 # Celery
 CELERY_BROKER_URL = devops_config['connections']['celery']['uri'].text
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
+
+# def implicit():
+#     from google.cloud import storage
+#
+#     # If you don't specify credentials when constructing the client, the
+#     # client library will look for credentials in the environment.
+#     storage_client = storage.Client(credentials=GS_CREDENTIALS)
+#
+#     # Make an authenticated API request
+#     buckets = list(storage_client.list_buckets())
+#     print(buckets)
+#
+# implicit()

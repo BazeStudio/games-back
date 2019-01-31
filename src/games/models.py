@@ -53,7 +53,7 @@ class MyUserManager(BaseUserManager):
             username, email, phone = (username, "", username)
 
         now = timezone.now()
-        is_active = extra_fields.pop("is_active", True)
+        is_active = extra_fields.pop("is_active", False)
         user = self.model(
             username=username,
             email=email,
@@ -102,13 +102,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         _('staff status'), default=False, help_text=_(
             'Designates whether the user can log into this admin site.'))
     is_active = models.BooleanField(
-        _('active'), default=True, help_text=_(
+        _('active'), default=False, help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     name = models.CharField(verbose_name='Имя', max_length=100, null=True, blank=True)
     surname = models.CharField(verbose_name='Фамилия', max_length=100, null=True, blank=True)
+    random_number = models.IntegerField(verbose_name='Код из смс', null=True, blank=True)
 
     objects = MyUserManager()
 
@@ -146,9 +147,9 @@ class Child(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30, null=False, verbose_name='Имя')
-    birthday = models.DateTimeField(null=False, verbose_name='Дата рождения')
+    birthday = models.DateField(null=False, verbose_name='Дата рождения')
     gender = models.CharField(max_length=7, choices=GENDER, null=False, verbose_name='Пол')
-    photo = models.ImageField(upload_to="photos/", null=True, verbose_name='Фото')
+    photo = models.CharField(null=True, blank=True, max_length=100, verbose_name='Фото')
 
     parent = models.ForeignKey(User, on_delete=models.CASCADE, null=True, verbose_name='Родитель')
 
@@ -169,7 +170,7 @@ class Child(models.Model):
 
 
 class Statistic(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Ребенок')
 
     game = models.IntegerField(
         "Номер игры",
@@ -177,7 +178,7 @@ class Statistic(models.Model):
         validators=[
             MinValueValidator(1),
             MaxValueValidator(5),
-        ], unique=True,
+        ],
         help_text='Целочисленное значение от 1 до 5'
     )
 
@@ -187,13 +188,12 @@ class Statistic(models.Model):
         validators=[
             MinValueValidator(1),
             MaxValueValidator(5),
-        ], unique=True,
+        ],
         help_text='Целочисленное значение от 1 до 5'
     )
 
     start_time = models.DateTimeField(verbose_name='Время начала')
-    end_time = models.DateTimeField(verbose_name='Время окончания')
-    duration = models.DateTimeField(verbose_name='Продолжительность')
+    continuance = models.IntegerField(verbose_name='Продолжительность', validators=[MinValueValidator(0)])
 
     mistakes_count = models.IntegerField(
         verbose_name='Количество ошибок',
@@ -202,10 +202,10 @@ class Statistic(models.Model):
         ],
     )
 
-    correct_percentage = models.FloatField(
+    correct_percentage = models.IntegerField(
         validators=[
             MinValueValidator(0),
-            MaxValueValidator(1),
+            MaxValueValidator(100),
         ],
         null=False,
         verbose_name='Процент верно выполненных'
@@ -248,6 +248,8 @@ class Category(models.Model):
 class Color(models.Model):
     id = models.AutoField(primary_key=True)
     color = models.CharField(max_length=30, null=False, verbose_name='Цвет')
+    description = models.CharField(max_length=100, null=False, blank=False, verbose_name='Цвет со склонением',
+                                   help_text='Впишите текст с нужным склонением выбранного цвета')
 
     @staticmethod
     def populate(values):
@@ -256,7 +258,7 @@ class Color(models.Model):
         ) for eng_val, rus_val in values.items()])
 
     def __str__(self):
-        return self.color
+        return self.description
 
     class Meta:
         verbose_name = u"Цвета"
@@ -395,12 +397,13 @@ class Game_1_obj_Manager(models.Manager):
 
 
 class Game_1_obj(models.Model):
-
     id = models.AutoField(primary_key=True)
 
     description = models.CharField(max_length=100, verbose_name='Название')
+    description_eng = models.CharField(max_length=100, verbose_name='Название на английском', null=False, blank=False,
+                                       default='change me')
 
-    image = models.ImageField(upload_to="images/", null=True, verbose_name='Загрузить изображение')
+    image = models.ImageField(upload_to="images/", null=True, verbose_name='Загрузить изображение', help_text='до 5 мб')
 
     audio = models.FileField(
         upload_to='audios/',
@@ -408,7 +411,20 @@ class Game_1_obj(models.Model):
             validate_file_extension, validate_file_size
         ],
         null=True,
-        verbose_name='Аудио'
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
     )
 
     material = models.ForeignKey(Material, on_delete=models.CASCADE, verbose_name='Материал')
@@ -433,11 +449,15 @@ class Game_1_obj(models.Model):
     color = models.ForeignKey(Color, on_delete=models.CASCADE,
                               verbose_name='Цвет')
 
+    last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
+                                        verbose_name='Последнее время изменений')
+
     def save(self, *args, **kwargs):
         if self.color == 'не указно':
             self.description = '{}'.format(self.sub_category)
         else:
             self.description = '{}+{}'.format(self.color, self.sub_category)
+        self.last_changed = timezone.now()
         return super(Game_1_obj, self).save(*args, **kwargs)
 
     objects = Game_1_obj_Manager()
@@ -446,8 +466,113 @@ class Game_1_obj(models.Model):
         return self.description
 
     class Meta:
-        verbose_name = u"Объект игры №1"
-        verbose_name_plural = u"Массив изображений №1"
+        verbose_name = u"Объект игры № 1"
+        verbose_name_plural = u"Массив изображений № 1"
+
+
+class Game_2_Obj_Level_1(models.Model):
+    description = models.CharField(max_length=100, verbose_name='Название группы')
+    description_eng = models.CharField(max_length=100, verbose_name='Название группы на английском',
+                                       default='change me')
+
+    image_1 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №1',
+                                help_text='до 5 мб')
+    image_2 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №2',
+                                help_text='до 5 мб')
+
+    last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
+                                        verbose_name='Последнее время изменений')
+
+    def save(self, *args, **kwargs):
+        self.last_changed = timezone.now()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        verbose_name = u"Объект игры № 4 (уровень 1)"
+        verbose_name_plural = u"Группы изображений для уровня № 1"
+
+
+class Game_2_Obj_Level_2(models.Model):
+    description = models.CharField(max_length=100, verbose_name='Название группы')
+    description_eng = models.CharField(max_length=100, verbose_name='Название группы на английском',
+                                       default='change me')
+
+    image_1 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №1',
+                                help_text='до 5 мб')
+    image_2 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №2',
+                                help_text='до 5 мб')
+    image_3 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №3',
+                                help_text='до 5 мб')
+
+    last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
+                                        verbose_name='Последнее время изменений')
+
+    def save(self, *args, **kwargs):
+        self.last_changed = timezone.now()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        verbose_name = u"Объект игры № 4 (уровень 2)"
+        verbose_name_plural = u"Группы изображений для уровня № 2"
+
+
+class Game_2_Obj_Level_3(models.Model):
+    description = models.CharField(max_length=100, verbose_name='Название группы')
+    description_eng = models.CharField(max_length=100, verbose_name='Название группы на английском',
+                                       default='change me')
+
+    image_1 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №1',
+                                help_text='до 5 мб')
+    image_2 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №2',
+                                help_text='до 5 мб')
+    image_3 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №3',
+                                help_text='до 5 мб')
+    image_4 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №4',
+                                help_text='до 5 мб')
+    image_5 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение №5',
+                                help_text='до 5 мб')
+
+    last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
+                                        verbose_name='Последнее время изменений')
+
+    def save(self, *args, **kwargs):
+        self.last_changed = timezone.now()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        verbose_name = u"Объект игры № 4 (уровень 3)"
+        verbose_name_plural = u"Группы изображений для уровня № 3"
+
+
+class Game_3_Obj(models.Model):
+    image_1 = models.ImageField(upload_to="images/", null=False, verbose_name='Загрузить изображение',
+                                help_text='до 5 мб')
+    verb = models.CharField(max_length=100, verbose_name='Глагол', null=False, blank=False)
+    verb_eng = models.CharField(max_length=100, verbose_name='Глагол на английском', null=False, blank=False,
+                                       default='change me')
+
+    last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
+                                        verbose_name='Последнее время изменений')
+
+    def save(self, *args, **kwargs):
+        self.last_changed = timezone.now()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.verb
+
+    class Meta:
+        verbose_name = u"Объект игры № 5 "
+        verbose_name_plural = u"Массив изображений № 3"
 
 
 class Rule(models.Model):

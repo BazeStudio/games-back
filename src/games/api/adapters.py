@@ -32,5 +32,6 @@ class CustomUserAccountAdapter(DefaultAccountAdapter):
         else:
             user_field(user, 'email', email)
 
+        user.is_active = False
         user.save()
         return user
