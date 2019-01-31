@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime, timedelta
-from random import randint
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+import csv
+from io import StringIO
 
 import requests
 from django.contrib.auth.password_validation import validate_password
@@ -311,11 +312,39 @@ def send_statistics(request, **kwargs):
     else:
         raise Http404
 
-    statistic = serializers.StatisticSerizlier([models.Statistic.objects.filter(child=child)
-                                                for child in user.child_set.all()], many=True).data
     if user.email:
-        send_mail('Авторизация Kit-4-Kid', statistic,
-                  'info@kit-4-kid', (user.email,), fail_silently=False)
+        statistic = []
+
+        for child in user.child_set.all():
+            statistic += models.Statistic.objects.filter(child=child)
+
+        attachment_csv_file = StringIO()
+        statistic_fieldnames = [field.name for field in models.Statistic._meta.fields
+                                if field.name not in ['id', 'mistakes_count']]
+        writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
+        writer.writerow({
+                'child': 'Имя',
+                'game': 'Номер игры',
+                'level': 'Уровень',
+                'start_time': 'Время начала',
+                'continuance': 'Продолжительность (в секундах)',
+                'correct_percentage': 'Процент верно выполненных'
+            })
+
+        for s in statistic:
+            row = {
+                'child': s.child.name,
+                'game': s.game,
+                'level': s.level,
+                'start_time': s.start_time,
+                'continuance': s.continuance,
+                'correct_percentage': s.correct_percentage
+            }
+            writer.writerow(row)
+
+        mail = EmailMessage('Статистика Kit-4-Kid', 'Здравствуйте.\n\nСтатистика игр по Вашим детям:\nИгра 1 - сопоставления,\nИгра 2 - Различения,\nИгра 3 - Категории,\nИгра 4 - Последовательности,\nИгра 5 - Глаголы\n\n\nС уважением,\nадминистрация Kit-4-Kid', 'info@kit-4-kid', (user.email,))
+        mail.attach('statistics.csv', attachment_csv_file.getvalue(), 'text/csv')
+        mail.send(fail_silently=True)
         return Response(status=status.HTTP_200_OK)
     else:
         return Response(data={'detail': 'Missing email'}, status=status.HTTP_400_BAD_REQUEST)
