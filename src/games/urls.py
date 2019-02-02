@@ -10,6 +10,9 @@ from . import settings
 schema_view = get_swagger_view(title='API Игры')
 
 
+admin.site.index_template = 'entities/admin.html'
+admin.autodiscover()
+
 urlpatterns = [
     url(r'^api/v1/', include('rest_auth.urls')),
     path('api/v1/', include(api_urls.router.urls), name='change_me'),

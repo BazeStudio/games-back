@@ -29,6 +29,7 @@ django-admin-tools = "*"
 django-fluent-dashboard = "*"
 django-storages = {extras = ["google"], version = "*"}
 google-cloud-storage = "*"
+vk = "*"
 
 [requires]
 python_version = "3.6"

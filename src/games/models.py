@@ -116,6 +116,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['name', 'surname']
 
+    vk_token = models.CharField(max_length=100, null=True, blank=True)
+    facebook_token = models.CharField(max_length=100, null=True, blank=True)
+
     def __str__(self):
         return '{} {}'.format(self.name, self.surname)
 

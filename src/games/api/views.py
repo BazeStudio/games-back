@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.core.mail import send_mail, EmailMessage
 import csv
 from io import StringIO
+import hashlib, uuid
 
 import requests
 from django.contrib.auth.password_validation import validate_password
@@ -17,10 +18,11 @@ from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from rest_framework.response import Response, SimpleTemplateResponse
 from rest_framework.views import APIView
 from random import randint
-
+from django.db.models import Q
+import vk
 
 from games import models
 from . import serializers
@@ -108,12 +110,12 @@ def email_confirmation(request, **kwargs):
     if token_obj.exists():
         user = token_obj.get().user
     else:
-        raise Http404
+        return SimpleTemplateResponse('entities/not_confirm.html')
 
     if request.method == 'GET':
         user.is_active = True
         user.save()
-        return Response(status=status.HTTP_200_OK)
+        return SimpleTemplateResponse('entities/confirm.html')
 
     raise Http404
 
@@ -436,6 +438,84 @@ def get_child_statistics(request, **kwargs):
     return Response(data)
 
 
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def social_registration(request, **kwargs):
+    token = request.data.get('token', None)
+    social = request.data.get('social', None)
+    user_id = request.data.get('user_id', None)
+
+    if not token or not social:
+        return Response({'detail': 'Missing token or social type'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if social == 'vk':
+        kw = {'vk_token': token}
+    elif social == 'facebook':
+        kw = {'facebook_token': token}
+    else:
+        return Response({'detail': 'Incorrect social type (options: "vk", "facebook")'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    if models.User.objects.filter(**kw).exists():
+        return Response({'detail': 'User with access token %s already exist' % token},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    salt = uuid.uuid4().hex
+    hashed_password = hashlib.sha512((token + salt).encode('utf-8')).hexdigest()
+    data = {
+        'username': token,
+        'email': None,
+        'phone': None,
+        'is_active': True,
+        'is_superuser': False,
+        'is_staff': False,
+    }
+    if social == 'vk':
+        session = vk.Session(access_token=token)
+        vk_api = vk.API(session, v=3)
+        if not user_id:
+            return Response({'detail': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
+        response = vk_api.users.get(user_id=user_id)[0]
+        data.update({
+            'name': response['first_name'],
+            'surname': response['last_name'],
+            'vk_token': token,
+        })
+    elif social == 'facebook':
+        data.update({
+            'name': '',
+            'surname': '',
+            'facebook_token': token,
+        })
+
+    user = models.User.objects.create(**data)
+    user.set_password(hashed_password)
+    user.save()
+    token_obj = Token.objects.create(user=user)
+    return Response({'key': token_obj.key}, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def social_login(request, **kwargs):
+    token = request.data.get('token', None)
+    social = request.data.get('social', None)
+    if not token or not social:
+        raise Http404
+
+    if social not in ['vk', 'facebook']:
+        return Response({'detail': 'Incorrect social type (options: "vk", "facebook")'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    user = models.User.objects.filter(Q(vk_token=token) | Q(facebook_token=token))
+    if user.exists():
+        return Response({'key': Token.objects.get(user=user.get()).key}, status=status.HTTP_200_OK)
+    else:
+        raise Http404
+
+
 class ChildViewSet(viewsets.ModelViewSet):
     queryset = models.Child.objects.all()
     serializer_class = serializers.ChildSerializer
@@ -534,7 +614,8 @@ class CustomRegisterView(RegisterView):
             if '@' in user.username:
                 token_obj = Token.objects.get(user=user)
                 url = 'http://142.93.100.226/api/v1/users/{key}/email_confirmation/'.format(key=token_obj.key)
-                send_mail('Авторизация Kit-4-Kid', 'Для подтверждения аккаунта перейдите по ссылке: %s' % url,
+                send_mail('Авторизация Kit-4-Kid',
+                          'Для подтверждения регистрации в мобильном приложении Kit4Kid перейдите по ссылке: %s' % url,
                           'info@kit-4-kid.com', (user.email,), fail_silently=False)
 
             return user

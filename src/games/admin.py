@@ -105,10 +105,13 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
         return True
 
     def get_fields(self, request, obj=None):
+        fields = self.fields
         if obj:
-            return self.fields + ['link_to_child']
+            if not request.user.is_superuser and 'is_active' in fields:
+                fields.remove('is_active')
+            return fields + ['link_to_child']
 
-        return self.fields
+        return fields
 
 
 @admin.register(models.Statistic)
