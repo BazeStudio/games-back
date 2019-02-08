@@ -300,6 +300,32 @@ class Game3(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('verb', )
     exclude = ('last_changed',)
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -314,6 +340,7 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     fields = [
         'image',
         'audio',
+        'audio_eng',
         'category',
         'sub_category',
         'color',
@@ -326,7 +353,7 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'description_eng'
     ]
 
-    readonly_fields = ['bold_description', 'pic', 'hint_audio',]
+    readonly_fields = ['bold_description', 'pic', 'hint_audio', 'hint_audio_eng']
     exclude = ('description', )
     list_display = ('description',
                     'category',
@@ -373,11 +400,24 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     hint_audio.short_description = 'Воспроизвести аудиоподсказку'
     hint_audio.allow_tags = True
 
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def get_fields(self, request, obj=None):
         if obj:
             return [self.fields[0]] + ['pic'] +\
-                   [self.fields[1]] + ['hint_audio'] +\
-                   self.fields[2:] + ['bold_description']
+                   [self.fields[1]] + ['hint_audio'] + \
+                   [self.fields[2]] + ['hint_audio_eng'] + \
+                    self.fields[3:] + ['bold_description']
 
         return self.fields
 

@@ -566,6 +566,28 @@ class Game_3_Obj(models.Model):
     last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
                                         verbose_name='Последнее время изменений')
 
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     def save(self, *args, **kwargs):
         self.last_changed = timezone.now()
         return super().save(*args, **kwargs)
