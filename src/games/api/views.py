@@ -18,6 +18,8 @@ from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.parsers import FormParser, MultiPartParser
+
 from rest_framework.response import Response, SimpleTemplateResponse
 from rest_framework.views import APIView
 from random import randint
@@ -28,6 +30,16 @@ from games import models
 from . import serializers
 
 logger = logging.getLogger(__name__)
+
+
+class FileUploadViewSet(viewsets.ModelViewSet):
+    queryset = models.ImageUpload.objects.all()
+    serializer_class = serializers.ImageUploadSerializer
+    parser_classes = (MultiPartParser, FormParser,)
+    permission_classes = (permissions.AllowAny,)
+
+    def perform_create(self, serializer):
+        serializer.save(datafile=self.request.data.get('datafile'))
 
 
 def send_sms(phone, subject, api_id='5C88E140-FB99-A47D-C5D3-81D3473364AE'):

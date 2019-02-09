@@ -1,0 +1,54 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+<style>
+    .loadbutton {
+        background-color: #900;
+        text-align: center;
+        color: #FFF;
+        position: relative;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        padding: 10px;
+        width: 120px;
+        -webkit-transition-duration: 0.4s; /* Safari */
+        transition-duration: 0.4s;
+        text-decoration: none;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .loadbutton:after {
+        content: "";
+        background: #f1f1f1;
+        display: block;
+        position: absolute;
+        padding-top: 300%;
+        margin-left: -20px !important;
+        margin-top: -120%;
+        opacity: 0;
+        transition: all 0.8s
+    }
+
+    .loadbutton:active:after {
+        padding: 0;
+        margin: 0;
+        opacity: 1;
+        transition: 0s
+    }
+
+</style>
+
+<div>
+    <form action="load/" method="GET">
+        {% csrf_token %}
+
+        Укажите email:<br>
+        <input type="text" name="email" size="30">
+        <input type="submit" value="Отправить статистику на почту">
+    </form>
+</div>
+<br />
+{{ block.super }}
+{% endblock %}

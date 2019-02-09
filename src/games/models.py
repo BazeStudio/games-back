@@ -666,3 +666,7 @@ class Rule(models.Model):
         unique_together = (
             ("game", "level"),
         )
+
+
+class ImageUpload(models.Model):
+    datafile = models.ImageField(upload_to="images/")

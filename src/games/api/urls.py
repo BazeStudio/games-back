@@ -7,6 +7,7 @@ router = DefaultRouter(trailing_slash=False)
 # router.register(r'child', views.ChildViewSet)
 router.register(r'comments', views.CommentsViewSet)
 router.register(r'statistics', views.StatisticViewSet)
+router.register(r'files', views.FileUploadViewSet)
 
 urlpatterns = [
     url(r'^users/(?P<key>[\w\d]+)/$', views.get_user, name='user_detail'),

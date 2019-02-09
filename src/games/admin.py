@@ -5,8 +5,14 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.utils.html import mark_safe
-
+from io import StringIO
+import csv
+from django.http import HttpResponseRedirect
+from django.conf.urls import url
 from . import models
+from django.contrib import messages
+from django.core.mail import EmailMessage
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +57,8 @@ class StaffRequiredAdminMixin(object):
 @admin.register(models.User)
 class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
+    change_form_template = 'entities/change_user_form.html'
+
     fields = [
         'username',
         'email',
@@ -62,6 +70,70 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
     ]
 
     readonly_fields = ['link_to_child', 'date_joined']
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            # URL for button in template
+            url('load/', self.send_stats),
+        ]
+        return my_urls + urls
+
+    def send_stats(self, request, **kwargs):
+        logger.info("Retrieve command for send statistic")
+        if request.method == "GET":
+
+            entered_email = request.GET['email']
+            if re.match("^.+@(\[?)[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$", entered_email) is None:
+                messages.add_message(request, messages.ERROR,
+                                     'Неверный почтовый адрес')
+                return HttpResponseRedirect('../')
+
+            object_id = request.path.split('/')[4]
+            user = models.User.objects.get(pk=int(object_id))
+            if entered_email:
+                statistic = []
+
+                for child in user.child_set.all():
+                    statistic += models.Statistic.objects.filter(child=child)
+
+                attachment_csv_file = StringIO()
+                statistic_fieldnames = [field.name for field in models.Statistic._meta.fields
+                                        if field.name not in ['id', 'mistakes_count']]
+                writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
+                writer.writerow({
+                    'child': 'Имя',
+                    'game': 'Номер игры',
+                    'level': 'Уровень',
+                    'start_time': 'Время начала',
+                    'continuance': 'Продолжительность (в секундах)',
+                    'correct_percentage': 'Процент верно выполненных'
+                })
+
+                for s in statistic:
+                    row = {
+                        'child': s.child.name,
+                        'game': s.game,
+                        'level': s.level,
+                        'start_time': s.start_time,
+                        'continuance': s.continuance,
+                        'correct_percentage': s.correct_percentage
+                    }
+                    writer.writerow(row)
+
+                mail = EmailMessage('Статистика Kit-4-Kid',
+                                    'Здравствуйте.\n\nСтатистика игр по Вашим детям:\nИгра 1 - Сопоставления,\nИгра 2 - Различения,\nИгра 3 - Категории,\nИгра 4 - Последовательности,\nИгра 5 - Глаголы\n\n\nС уважением,\nадминистрация Kit-4-Kid',
+                                    'info@kit-4-kid', (entered_email,))
+                mail.attach('statistics.csv', attachment_csv_file.getvalue(), 'text/csv')
+                mail.send(fail_silently=True)
+
+                messages.add_message(request, messages.INFO,
+                                     'Статистика успешно отправлена')
+            else:
+                messages.add_message(request, messages.ERROR,
+                                     'Почта не указана')
+
+        return HttpResponseRedirect('../')
 
     def link_to_child(self, obj):
         if obj:
@@ -117,8 +189,42 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 @admin.register(models.Statistic)
 class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
-    search_fields = ('child__name__icontains', )
-    list_display = ('child', 'game', 'level', 'correct_percentage')
+    search_fields = ('child__name__icontains',)
+    list_display = ('child', 'get_parent', 'game', 'level', 'correct_percentage',)
+
+    def get_parent(self, obj):
+        if obj.child.parent.name and obj.child.parent.surname:
+            return obj.child.parent.surname + ' ' + obj.child.parent.name
+        elif obj.child.parent.name and not obj.child.parent.surname:
+            return obj.child.parent.name
+        else:
+            return 'Отсувует'
+
+    def get_search_results(self, request, queryset, search_term):
+        search_term = search_term.strip()
+        qs, use_distinct = super().get_search_results(request, queryset, search_term)
+        if len(qs) != 0:
+            return qs, use_distinct
+        else:
+            count_spaces = search_term.count(' ')
+            if count_spaces == 2:
+                surname, name, name_child = search_term.split(' ')
+                qs = models.Statistic.objects.filter(child__parent__name=name,child__name=name_child)
+
+                if len(qs) != 0:
+                    return qs, False
+                else:
+                    qs = models.Statistic.objects.filter(child__parent__name=name_child, child__parent__surname=name,
+                                                         child__name=surname)
+                    return qs, False
+            elif count_spaces == 1:
+                surname, name = search_term.split(' ', 1)
+                return models.Statistic.objects.filter(child__parent__name=name, child__parent__surname=surname), False
+            else:
+                return qs, use_distinct
+
+    get_parent.short_description = 'Родитель'
+    get_parent.admin_order_field = 'child__parent__name'
 
     def has_add_permission(self, request):
         if not request.user.is_superuser:
@@ -130,12 +236,7 @@ class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
             return False
         return True
 
-    def has_module_permission(self, request):
-        if not request.user.is_superuser:
-            return False
-        return True
-
-    def has_view_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None):
         if not request.user.is_superuser:
             return False
         return True

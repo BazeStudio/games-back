@@ -30,6 +30,7 @@ django-fluent-dashboard = "*"
 django-storages = {extras = ["google"], version = "*"}
 google-cloud-storage = "*"
 vk = "*"
+django-admin-autocomplete-filter = "*"
 
 [requires]
 python_version = "3.6"

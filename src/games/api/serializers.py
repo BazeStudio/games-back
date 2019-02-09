@@ -157,3 +157,9 @@ class Game_3_Obj_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.Game_3_Obj
         exclude = ('last_changed',)
+
+
+class ImageUploadSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = models.ImageUpload
+        fields = '__all__'
