@@ -443,15 +443,24 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'audio',
         'audio_eng',
         'category',
+        'category_eng',
         'sub_category',
+        'sub_category_eng',
         'color',
+        'color_eng',
         'material',
+        'material_eng',
         'quantity',
+        'quantity_eng',
         'form',
+        'form_eng',
         'functional_question',
+        'functional_question_eng',
         'compound_question',
+        'compound_question_eng',
         'definition_question',
-        'description_eng'
+        'definition_question_eng',
+        'description_eng',
     ]
 
     readonly_fields = ['bold_description', 'pic', 'hint_audio', 'hint_audio_eng']
