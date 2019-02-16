@@ -250,6 +250,32 @@ class FormAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('form', )
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -258,6 +284,32 @@ class FormAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class CategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('category', )
+
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
 
     def check_perm(self, user_obj):
         return True
@@ -268,6 +320,32 @@ class ColorAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('color', 'description')
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -276,6 +354,32 @@ class ColorAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class CompoundQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('part', )
+
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
 
     def check_perm(self, user_obj):
         return True
@@ -286,6 +390,32 @@ class DefinitionQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('definition', )
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -294,6 +424,32 @@ class DefinitionQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class FunctionalQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('question', )
+
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
 
     def check_perm(self, user_obj):
         return True
@@ -304,6 +460,32 @@ class MaterialAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('material', )
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -313,6 +495,32 @@ class SubCategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('description', )
 
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -321,6 +529,32 @@ class SubCategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class QuantityAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('description', )
+
+    readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def hint_audio(self, obj):
+        if not obj.audio:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio.url)
+        )
+
+    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
+    hint_audio.allow_tags = True
+
+    def hint_audio_eng(self, obj):
+        if not obj.audio_eng:
+            return 'Отсутствует'
+
+        return mark_safe(
+            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+                .format(url=obj.audio_eng.url)
+        )
+
+    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
+    hint_audio_eng.allow_tags = True
 
     def check_perm(self, user_obj):
         return True
@@ -374,6 +608,36 @@ class Game2Level1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description', )
     exclude = ('last_changed',)
 
+    readonly_fields = ['pic_1', 'pic_2']
+
+    def pic_1(self, obj):
+        if obj and obj.image_1:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_1.url,
+                    width=obj.image_1.width / 2,
+                    height=obj.image_1.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_1.short_description = 'Изображение 1'
+    pic_1.allow_tags = True
+
+    def pic_2(self, obj):
+        if obj and obj.image_2:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_2.url,
+                    width=obj.image_2.width / 2,
+                    height=obj.image_2.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_2.short_description = 'Изображение 2'
+    pic_2.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -382,6 +646,50 @@ class Game2Level1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class Game2Level2Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description',)
     exclude = ('last_changed',)
+
+    readonly_fields = ['pic_1', 'pic_2', 'pic_3']
+
+    def pic_1(self, obj):
+        if obj and obj.image_1:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_1.url,
+                    width=obj.image_1.width / 2,
+                    height=obj.image_1.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_1.short_description = 'Изображение 1'
+    pic_1.allow_tags = True
+
+    def pic_2(self, obj):
+        if obj and obj.image_2:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_2.url,
+                    width=obj.image_2.width / 2,
+                    height=obj.image_2.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_2.short_description = 'Изображение 2'
+    pic_2.allow_tags = True
+
+    def pic_3(self, obj):
+        if obj and obj.image_3:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_3.url,
+                    width=obj.image_3.width / 2,
+                    height=obj.image_3.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_3.short_description = 'Изображение 3'
+    pic_3.allow_tags = True
 
     def check_perm(self, user_obj):
         return True
@@ -392,6 +700,78 @@ class Game2Level3Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description',)
     exclude = ('last_changed',)
 
+    readonly_fields = ['pic_1', 'pic_2', 'pic_3', 'pic_4', 'pic_5']
+
+    def pic_1(self, obj):
+        if obj and obj.image_1:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_1.url,
+                    width=obj.image_1.width / 2,
+                    height=obj.image_1.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_1.short_description = 'Изображение 1'
+    pic_1.allow_tags = True
+
+    def pic_2(self, obj):
+        if obj and obj.image_2:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_2.url,
+                    width=obj.image_2.width / 2,
+                    height=obj.image_2.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_2.short_description = 'Изображение 2'
+    pic_2.allow_tags = True
+
+    def pic_3(self, obj):
+        if obj and obj.image_3:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_3.url,
+                    width=obj.image_3.width / 2,
+                    height=obj.image_3.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_3.short_description = 'Изображение 3'
+    pic_3.allow_tags = True
+
+    def pic_4(self, obj):
+        if obj and obj.image_4:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_4.url,
+                    width=obj.image_4.width / 2,
+                    height=obj.image_4.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_4.short_description = 'Изображение 4'
+    pic_4.allow_tags = True
+
+    def pic_5(self, obj):
+        if obj and obj.image_5:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_5.url,
+                    width=obj.image_5.width / 2,
+                    height=obj.image_5.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic_5.short_description = 'Изображение 5'
+    pic_5.allow_tags = True
+
     def check_perm(self, user_obj):
         return True
 
@@ -401,7 +781,21 @@ class Game3(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('verb', )
     exclude = ('last_changed',)
 
-    readonly_fields = ['hint_audio', 'hint_audio_eng']
+    readonly_fields = ['pic', 'hint_audio', 'hint_audio_eng']
+
+    def pic(self, obj):
+        if obj and obj.image_1:
+            return mark_safe(
+                '<img src="{url}" width="{width}" height={height} />'.format(
+                    url=obj.image_1.url,
+                    width=obj.image_1.width / 2,
+                    height=obj.image_1.height / 2,
+                )
+            )
+        return 'Отсутствует'
+
+    pic.short_description = 'Изображение'
+    pic.allow_tags = True
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -443,23 +837,14 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'audio',
         'audio_eng',
         'category',
-        'category_eng',
         'sub_category',
-        'sub_category_eng',
         'color',
-        'color_eng',
         'material',
-        'material_eng',
         'quantity',
-        'quantity_eng',
         'form',
-        'form_eng',
         'functional_question',
-        'functional_question_eng',
         'compound_question',
-        'compound_question_eng',
         'definition_question',
-        'definition_question_eng',
         'description_eng',
     ]
 
@@ -503,7 +888,7 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
             return 'Отсутствует'
 
         return mark_safe(
-            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
+            '<audio src="{url}" conmutrols>Your browser does not support the audio element.</audio>'
                 .format(url=obj.audio.url)
         )
 

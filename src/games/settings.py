@@ -118,7 +118,7 @@ ADMIN_REORDER = (
     },
 
     {
-        'app': 'games', 'label': 'Группы изображений игры № 4',
+        'app': 'games', 'label': 'Группы изображений игры № 4 (Последовательности)',
         'models': (
             'games.Game_2_Obj_Level_1',
             'games.Game_2_Obj_Level_2',
@@ -127,7 +127,7 @@ ADMIN_REORDER = (
     },
 
     {
-        'app': 'games', 'label': 'Массив изображений игры № 5',
+        'app': 'games', 'label': 'Массив изображений игры № 5 (Глаголы)',
         'models': (
             'games.Game_3_Obj',
         )

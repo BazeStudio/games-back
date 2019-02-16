@@ -111,6 +111,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     surname = models.CharField(verbose_name='Фамилия', max_length=100, null=True, blank=True)
     random_number = models.IntegerField(verbose_name='Код из смс', null=True, blank=True)
 
+    photo = models.CharField(null=True, blank=True, max_length=100, verbose_name='Фото')
+
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
@@ -234,6 +236,31 @@ class Category(models.Model):
     id = models.AutoField(primary_key=True)
     category = models.CharField(max_length=30, null=False, verbose_name='Категория')
 
+    category_eng = models.CharField(max_length=100, verbose_name='Категория на английском', null=False, blank=False,
+                                       default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     @staticmethod
     def populate(values):
         Category.objects.bulk_create([Category(
@@ -254,6 +281,31 @@ class Color(models.Model):
     description = models.CharField(max_length=100, null=False, blank=False, verbose_name='Цвет со склонением',
                                    help_text='Впишите текст с нужным склонением выбранного цвета')
 
+    color_eng = models.CharField(max_length=100, verbose_name='Цвет на английском',
+                                 null=False, blank=False, default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     @staticmethod
     def populate(values):
         Color.objects.bulk_create([Color(
@@ -272,6 +324,31 @@ class Material(models.Model):
     id = models.AutoField(primary_key=True)
     material = models.CharField(max_length=30, null=False, verbose_name='Материал')
 
+    material_eng = models.CharField(max_length=100, verbose_name='Материал на английском', null=False, blank=False,
+                                    default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     @staticmethod
     def populate(values):
         Material.objects.bulk_create([Material(
@@ -289,6 +366,30 @@ class Material(models.Model):
 class Form(models.Model):
     id = models.AutoField(primary_key=True)
     form = models.CharField(max_length=30, null=False, verbose_name='Форма')
+    form_eng = models.CharField(max_length=100, verbose_name='Форма на английском', null=False, blank=False,
+                                       default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
 
     @staticmethod
     def populate(values):
@@ -308,6 +409,31 @@ class FunctionalQuestion(models.Model):
     id = models.AutoField(primary_key=True)
     question = models.CharField(max_length=30, null=False, verbose_name='Функциональный вопрос')
 
+    question_eng = models.CharField(max_length=100, verbose_name='Функциональный вопрос на английском',
+                                               null=False, blank=False, default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     @staticmethod
     def populate(values):
         FunctionalQuestion.objects.bulk_create([FunctionalQuestion(
@@ -325,6 +451,31 @@ class FunctionalQuestion(models.Model):
 class CompoundQuestion(models.Model):
     id = models.AutoField(primary_key=True)
     part = models.CharField(max_length=30, null=False, verbose_name='Составная часть в виде вопроса')
+
+    part_eng = models.CharField(max_length=100, verbose_name='Составная часть вопроса на английском',
+                                             null=False, blank=False, default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
 
     @staticmethod
     def populate(values):
@@ -344,6 +495,31 @@ class DefinitionQuestion(models.Model):
     id = models.AutoField(primary_key=True)
     definition = models.CharField(max_length=30, null=False, verbose_name='Определеяющий в виде вопроса')
 
+    definition_eng = models.CharField(max_length=100, verbose_name='Определение в виде вопроса на английском',
+                                               null=False, blank=False, default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     @staticmethod
     def populate(values):
         DefinitionQuestion.objects.bulk_create([DefinitionQuestion(
@@ -361,6 +537,31 @@ class DefinitionQuestion(models.Model):
 class SubCategory(models.Model):
     description = models.CharField(primary_key=True, max_length=100, verbose_name='Подкатегория')
 
+    description_eng = models.CharField(max_length=100, verbose_name='Подкатегория на английском', null=False,
+                                        blank=False, default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
+
     def __str__(self):
         return self.description
 
@@ -377,6 +578,31 @@ class SubCategory(models.Model):
 
 class Quantity(models.Model):
     description = models.CharField(primary_key=True, max_length=50, verbose_name='Количество')
+
+    description_eng = models.CharField(max_length=100, verbose_name='Количество на английском', null=False, blank=False,
+                                    default='change me')
+
+    audio = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио',
+        help_text='до 5 мб',
+    )
+
+    audio_eng = models.FileField(
+        upload_to='audios/',
+        validators=[
+            validate_file_extension, validate_file_size
+        ],
+        null=True,
+        blank=True,
+        verbose_name='Аудио на английском',
+        help_text='до 5 мб',
+    )
 
     def __str__(self):
         return self.description
@@ -432,52 +658,25 @@ class Game_1_obj(models.Model):
 
     material = models.ForeignKey(Material, on_delete=models.CASCADE, verbose_name='Материал')
 
-    material_eng = models.CharField(max_length=100, verbose_name='Материал на английском', null=False, blank=False,
-                                       default='change me')
-
     form = models.ForeignKey(Form, on_delete=models.CASCADE, verbose_name='Форма')
-
-    form_eng = models.CharField(max_length=100, verbose_name='Форма на английском', null=False, blank=False,
-                                       default='change me')
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
 
-    category_eng = models.CharField(max_length=100, verbose_name='Категория на английском', null=False, blank=False,
-                                       default='change me')
-
     quantity = models.ForeignKey(Quantity, on_delete=models.CASCADE, verbose_name='Количество')
 
-    quantity_eng = models.CharField(max_length=100, verbose_name='Количество на английском', null=False, blank=False,
-                                       default='change me')
-
     sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, verbose_name='Подкатегория')
-
-    sub_category_eng = models.CharField(max_length=100, verbose_name='Подкатегория на английском', null=False,
-                                        blank=False, default='change me')
 
     functional_question = models.ForeignKey(FunctionalQuestion, on_delete=models.CASCADE,
                                             verbose_name='Функциональный вопрос')
 
-    functional_question_eng = models.CharField(max_length=100, verbose_name='Функциональный вопрос на английском',
-                                               null=False, blank=False, default='change me')
-
     compound_question = models.ForeignKey(CompoundQuestion, on_delete=models.CASCADE,
                                           verbose_name='Составная часть вопроса')
-
-    compound_question_eng = models.CharField(max_length=100, verbose_name='Составная часть вопроса на английском',
-                                             null=False, blank=False, default='change me')
 
     definition_question = models.ForeignKey(DefinitionQuestion, on_delete=models.CASCADE,
                                             verbose_name='Определение в виде вопроса')
 
-    definition_question_eng = models.CharField(max_length=100, verbose_name='Определение в виде вопроса на английском',
-                                               null=False, blank=False, default='change me')
-
     color = models.ForeignKey(Color, on_delete=models.CASCADE,
                               verbose_name='Цвет')
-
-    color_eng = models.CharField(max_length=100, verbose_name='Цвет на английском',
-                                               null=False, blank=False, default='change me')
 
     last_changed = models.DateTimeField(auto_now_add=True, blank=True, null=True,
                                         verbose_name='Последнее время изменений')
