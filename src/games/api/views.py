@@ -315,7 +315,7 @@ def child(request, **kwargs):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes((AllowAny,))
 def send_statistics(request, **kwargs):
     key = kwargs.get('key')
@@ -328,9 +328,14 @@ def send_statistics(request, **kwargs):
 
     if user.email:
         statistic = []
-
-        for child in user.child_set.all():
-            statistic += models.Statistic.objects.filter(child=child)
+        if request.method == 'GET':
+            for child in user.child_set.all():
+                statistic += models.Statistic.objects.filter(child=child)
+        elif request.method == 'POST':
+            ids = request.data.get('id', None)
+            if ids is None:
+                return Response(data={'detail': 'Missing ids'}, status=status.HTTP_400_BAD_REQUEST)
+            statistic = models.Statistic.objects.filter(pk__in=ids)
 
         attachment_csv_file = StringIO()
         statistic_fieldnames = [field.name for field in models.Statistic._meta.fields

@@ -781,7 +781,27 @@ class Game3(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('verb', )
     exclude = ('last_changed',)
 
+    change_list_template = 'entities/game_five_list.html'
+    change_form_template = 'entities/game_five_form.html'
+
+    list_display = ('verb', 'has_rus_audio', 'has_eng_audio')
     readonly_fields = ['pic', 'hint_audio', 'hint_audio_eng']
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = 'Аудиоподсказка(рус)'
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = 'Аудиоподсказка(англ)'
 
     def pic(self, obj):
         if obj and obj.image_1:
@@ -861,7 +881,24 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
                     'compound_question',
                     'definition_question',
                     'description_eng',
+                    'has_rus_audio', 'has_eng_audio'
                     )
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def bold_description(self, obj):
         return mark_safe(
