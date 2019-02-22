@@ -249,8 +249,25 @@ class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class FormAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('form', )
+    list_display = ('form', 'form_eng', 'has_rus_audio', 'has_eng_audio',)
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -287,6 +304,24 @@ class CategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
 
+    list_display = ('category','category_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
+
     def hint_audio(self, obj):
         if not obj.audio:
             return 'Отсутствует'
@@ -321,6 +356,23 @@ class ColorAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('color', 'description')
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
+    list_display = ('color', 'color_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe('<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -357,6 +409,26 @@ class CompoundQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
 
+    list_display = ('part', 'part_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
+
     def hint_audio(self, obj):
         if not obj.audio:
             return 'Отсутствует'
@@ -391,6 +463,26 @@ class DefinitionQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('definition', )
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    list_display = ('definition', 'definition_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -427,6 +519,26 @@ class FunctionalQuestionAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
 
+    list_display = ('question', 'question_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
+
     def hint_audio(self, obj):
         if not obj.audio:
             return 'Отсутствует'
@@ -461,6 +573,26 @@ class MaterialAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('material', )
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    list_display = ('material', 'material_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -497,6 +629,26 @@ class SubCategoryAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
 
+    list_display = ('description', 'description_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
+
     def hint_audio(self, obj):
         if not obj.audio:
             return 'Отсутствует'
@@ -531,6 +683,26 @@ class QuantityAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description', )
 
     readonly_fields = ['hint_audio', 'hint_audio_eng']
+
+    list_display = ('description', 'description_eng', 'has_rus_audio', 'has_eng_audio')
+
+    def has_rus_audio(self, obj):
+        if obj.audio:
+            return obj.audio.name
+        return 'нет'
+
+    has_rus_audio.allow_tags = True
+    has_rus_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(рус)</strong></font></b></a>')
+
+    def has_eng_audio(self, obj):
+        if obj.audio_eng:
+            return obj.audio_eng.name
+        return 'нет'
+
+    has_eng_audio.allow_tags = True
+    has_eng_audio.short_description = mark_safe(
+        '<a><b><font size="2"><strong>Аудиоподсказка(англ)</strong></font></b></a>')
 
     def hint_audio(self, obj):
         if not obj.audio:
@@ -854,8 +1026,6 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     fields = [
         'image',
-        'audio',
-        'audio_eng',
         'category',
         'sub_category',
         'color',
@@ -865,10 +1035,9 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
         'functional_question',
         'compound_question',
         'definition_question',
-        'description_eng',
     ]
 
-    readonly_fields = ['bold_description', 'pic', 'hint_audio', 'hint_audio_eng']
+    readonly_fields = ['bold_description', 'pic']
     exclude = ('description', )
     list_display = ('description',
                     'category',
@@ -880,8 +1049,8 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
                     'functional_question',
                     'compound_question',
                     'definition_question',
-                    'description_eng',
-                    'has_rus_audio', 'has_eng_audio'
+                    # 'description_eng',
+                    # 'has_rus_audio', 'has_eng_audio'
                     )
 
     def has_rus_audio(self, obj):
@@ -920,35 +1089,12 @@ class Game1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     pic.short_description = 'Изображение'
     pic.allow_tags = True
 
-    def hint_audio(self, obj):
-        if not obj.audio:
-            return 'Отсутствует'
-
-        return mark_safe(
-            '<audio src="{url}" conmutrols>Your browser does not support the audio element.</audio>'
-                .format(url=obj.audio.url)
-        )
-
-    hint_audio.short_description = 'Воспроизвести аудиоподсказку'
-    hint_audio.allow_tags = True
-
-    def hint_audio_eng(self, obj):
-        if not obj.audio_eng:
-            return 'Отсутствует'
-
-        return mark_safe(
-            '<audio src="{url}" controls>Your browser does not support the audio element.</audio>'
-                .format(url=obj.audio_eng.url)
-        )
-
-    hint_audio_eng.short_description = 'Воспроизвести аудиоподсказку на английском'
-    hint_audio_eng.allow_tags = True
 
     def get_fields(self, request, obj=None):
         if obj:
             return [self.fields[0]] + ['pic'] +\
-                   [self.fields[1]] + ['hint_audio'] + \
-                   [self.fields[2]] + ['hint_audio_eng'] + \
+                   [self.fields[1]] + \
+                   [self.fields[2]] + \
                     self.fields[3:] + ['bold_description']
 
         return self.fields
