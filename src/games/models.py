@@ -535,10 +535,10 @@ class DefinitionQuestion(models.Model):
 
 
 class SubCategory(models.Model):
-    description = models.CharField(primary_key=True, max_length=100, verbose_name='Подкатегория')
+    description = models.CharField(unique=True, max_length=100, verbose_name='Подкатегория')
 
     description_eng = models.CharField(max_length=100, verbose_name='Подкатегория на английском', null=False,
-                                        blank=False, default='change me')
+                                       blank=False, default='change me')
 
     audio = models.FileField(
         upload_to='audios/',
@@ -562,22 +562,16 @@ class SubCategory(models.Model):
         help_text='до 5 мб',
     )
 
+    class Meta:
+        verbose_name = 'Подкатегория'
+        verbose_name_plural = 'Подкатегории'
+
     def __str__(self):
         return self.description
 
-    @staticmethod
-    def populate(values):
-        SubCategory.objects.bulk_create([SubCategory(
-            description=rus_val,
-        ) for eng_val, rus_val in values.items()])
-
-    class Meta:
-        verbose_name = "Подкатегории"
-        verbose_name_plural = "Подкатегория"
-
 
 class Quantity(models.Model):
-    description = models.CharField(primary_key=True, max_length=50, verbose_name='Количество')
+    description = models.CharField(unique=True, max_length=50, verbose_name='Количество')
 
     description_eng = models.CharField(max_length=100, verbose_name='Количество на английском', null=False, blank=False,
                                     default='change me')
@@ -607,12 +601,6 @@ class Quantity(models.Model):
     def __str__(self):
         return self.description
 
-    @staticmethod
-    def populate(values):
-        Quantity.objects.bulk_create([Quantity(
-            description=rus_val,
-        ) for eng_val, rus_val in values.items()])
-
     class Meta:
         verbose_name = 'Количество'
         verbose_name_plural = 'Показатель количества'
@@ -634,27 +622,27 @@ class Game_1_obj(models.Model):
 
     image = models.ImageField(upload_to="images/", null=True, verbose_name='Загрузить изображение', help_text='до 5 мб')
 
-    audio = models.FileField(
-        upload_to='audios/',
-        validators=[
-            validate_file_extension, validate_file_size
-        ],
-        null=True,
-        blank=True,
-        verbose_name='Аудио',
-        help_text='до 5 мб',
-    )
-
-    audio_eng = models.FileField(
-        upload_to='audios/',
-        validators=[
-            validate_file_extension, validate_file_size
-        ],
-        null=True,
-        blank=True,
-        verbose_name='Аудио на английском',
-        help_text='до 5 мб',
-    )
+    # audio = models.FileField(
+    #     upload_to='audios/',
+    #     validators=[
+    #         validate_file_extension, validate_file_size
+    #     ],
+    #     null=True,
+    #     blank=True,
+    #     verbose_name='Аудио',
+    #     help_text='до 5 мб',
+    # )
+    #
+    # audio_eng = models.FileField(
+    #     upload_to='audios/',
+    #     validators=[
+    #         validate_file_extension, validate_file_size
+    #     ],
+    #     null=True,
+    #     blank=True,
+    #     verbose_name='Аудио на английском',
+    #     help_text='до 5 мб',
+    # )
 
     material = models.ForeignKey(Material, on_delete=models.CASCADE, verbose_name='Материал')
 
@@ -662,9 +650,9 @@ class Game_1_obj(models.Model):
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
 
-    quantity = models.ForeignKey(Quantity, on_delete=models.CASCADE, verbose_name='Количество')
+    quantity = models.ForeignKey(Quantity, on_delete=models.CASCADE, verbose_name='Количество', null=True, blank=True)
 
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, verbose_name='Подкатегория')
+    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, verbose_name='Подкатегория', null=True, blank=True)
 
     functional_question = models.ForeignKey(FunctionalQuestion, on_delete=models.CASCADE,
                                             verbose_name='Функциональный вопрос')
