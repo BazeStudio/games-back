@@ -31,6 +31,7 @@ django-storages = {extras = ["google"], version = "*"}
 google-cloud-storage = "*"
 vk = "*"
 django-admin-autocomplete-filter = "*"
+facebook-sdk = "*"
 
 [requires]
 python_version = "3.6"

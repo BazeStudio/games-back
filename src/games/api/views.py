@@ -25,6 +25,7 @@ from rest_framework.views import APIView
 from random import randint
 from django.db.models import Q
 import vk
+import facebook
 
 from games import models
 from . import serializers
@@ -458,30 +459,33 @@ def get_child_statistics(request, **kwargs):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes((AllowAny,))
-def social_registration(request, **kwargs):
+def social_login(request, **kwargs):
     token = request.data.get('token', None)
     social = request.data.get('social', None)
     user_id = request.data.get('user_id', None)
 
-    if not token or not social:
-        return Response({'detail': 'Missing token or social type'}, status=status.HTTP_400_BAD_REQUEST)
+    if not token or not social or not user_id:
+        return Response({'detail': 'Missing token or social type or user_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    token_for_save = str(user_id) + social
 
     if social == 'vk':
-        kw = {'vk_token': token}
+        kw = {'vk_token': token_for_save}
     elif social == 'facebook':
-        kw = {'facebook_token': token}
+        kw = {'facebook_token': token_for_save}
     else:
         return Response({'detail': 'Incorrect social type (options: "vk", "facebook")'},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    if models.User.objects.filter(**kw).exists():
-        return Response({'detail': 'User with access token %s already exist' % token},
-                        status=status.HTTP_400_BAD_REQUEST)
+    user = models.User.objects.filter(**kw)
+
+    if user.exists():
+        return Response({'key': Token.objects.get(user=user.get()).key}, status=status.HTTP_200_OK)
 
     salt = uuid.uuid4().hex
     hashed_password = hashlib.sha512((token + salt).encode('utf-8')).hexdigest()
     data = {
-        'username': token,
+        'username': token_for_save,
         'email': None,
         'phone': None,
         'is_active': True,
@@ -491,19 +495,23 @@ def social_registration(request, **kwargs):
     if social == 'vk':
         session = vk.Session(access_token=token)
         vk_api = vk.API(session, v=3)
-        if not user_id:
-            return Response({'detail': 'Missing user_id'}, status=status.HTTP_400_BAD_REQUEST)
         response = vk_api.users.get(user_id=user_id)[0]
         data.update({
             'name': response['first_name'],
             'surname': response['last_name'],
-            'vk_token': token,
+            'vk_token': token_for_save,
         })
     elif social == 'facebook':
+        graph = facebook.GraphAPI(token)
+        profile = graph.get_object(user_id)
+        try:
+            name, surname = profile['name'].split(' ', 1)
+        except ValueError:
+            name, surname = profile['name'], ''
         data.update({
-            'name': '',
-            'surname': '',
-            'facebook_token': token,
+            'name': name,
+            'surname': surname,
+            'facebook_token': str(user_id) + social,
         })
 
     user = models.User.objects.create(**data)
@@ -511,26 +519,6 @@ def social_registration(request, **kwargs):
     user.save()
     token_obj = Token.objects.create(user=user)
     return Response({'key': token_obj.key}, status=status.HTTP_200_OK)
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes((AllowAny,))
-def social_login(request, **kwargs):
-    token = request.data.get('token', None)
-    social = request.data.get('social', None)
-    if not token or not social:
-        raise Http404
-
-    if social not in ['vk', 'facebook']:
-        return Response({'detail': 'Incorrect social type (options: "vk", "facebook")'},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    user = models.User.objects.filter(Q(vk_token=token) | Q(facebook_token=token))
-    if user.exists():
-        return Response({'key': Token.objects.get(user=user.get()).key}, status=status.HTTP_200_OK)
-    else:
-        raise Http404
 
 
 class ChildViewSet(viewsets.ModelViewSet):

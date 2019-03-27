@@ -27,6 +27,5 @@ urlpatterns = [
     url(r'^users/(?P<key>[\w\d]+)/email_confirmation/$', views.email_confirmation, name='email_confirmation'),
     url(r'^users/(?P<key>[\w\d]+)/send_statistics/$', views.send_statistics, name='send_statistics'),
     url(r'^users/(?P<key>[\w\d]+)/send_sms/$', views.send_sms_to_user, name='send_sms'),
-    url(r'^registration/social$', views.social_registration, name='social_registration'),
     url(r'^login/social$', views.social_login, name='social_login'),
 ]
