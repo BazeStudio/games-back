@@ -25,7 +25,7 @@ urlpatterns = [
     url(r'^registration/$', views.CustomRegisterView.as_view(), name='registration'),
     url(r'^users/(?P<key>[\w\d]+)/approve/$', views.user_approve, name='approve'),
     url(r'^users/(?P<key>[\w\d]+)/email_confirmation/$', views.email_confirmation, name='email_confirmation'),
-    url(r'^users/(?P<key>[\w\d]+)/send_statistics/$', views.send_statistics, name='send_statistics'),
+    url(r'^users/(?P<key>[\w\d]+)/send_statistics$', views.send_statistics, name='send_statistics'),
     url(r'^users/(?P<key>[\w\d]+)/send_sms/$', views.send_sms_to_user, name='send_sms'),
     url(r'^login/social$', views.social_login, name='social_login'),
 ]

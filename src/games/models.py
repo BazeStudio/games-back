@@ -277,8 +277,8 @@ class Category(models.Model):
 
 class Color(models.Model):
     id = models.AutoField(primary_key=True)
-    color = models.CharField(max_length=30, null=False, verbose_name='Цвет')
-    description = models.CharField(max_length=100, null=False, blank=False, verbose_name='Цвет со склонением',
+    color = models.CharField(max_length=30, null=False, verbose_name='Цвет ID')
+    description = models.CharField(max_length=100, null=False, blank=False, verbose_name='Название цвета',
                                    help_text='Впишите текст с нужным склонением выбранного цвета')
 
     color_eng = models.CharField(max_length=100, verbose_name='Цвет на английском',

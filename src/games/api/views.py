@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.core.mail import send_mail, EmailMessage
 import csv
 from io import StringIO
@@ -43,7 +43,7 @@ class FileUploadViewSet(viewsets.ModelViewSet):
         serializer.save(datafile=self.request.data.get('datafile'))
 
 
-def send_sms(phone, subject, api_id='5C88E140-FB99-A47D-C5D3-81D3473364AE'):
+def send_sms(phone, subject, api_id='6231199C-55DB-921B-454E-B6DCBE888108'):
     logger.info('Send sms to %s' % phone)
 
     if type(subject) == str:
@@ -315,12 +315,62 @@ def child(request, **kwargs):
         raise Http404
 
 
+def calculate_age(born: date, eng=False):
+    today = date.today()
+    years = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    months = ((today-born).days - years*365) // 30
+
+    if eng:
+        return '{} years {} months'.format(years, months)
+
+    if int(str(years)[-1]) == 1:
+        y = '{} год'.format(years)
+    elif int(str(years)[-1]) in [2, 3, 4, 5]:
+        y = '{} года'.format(years)
+    else:
+        y = '{} лет'.format(years)
+
+    if months in [1, 2, 3, 4]:
+        m = '{} месяц'.format(months)
+    else:
+        m = '{} месяцев'.format(months)
+
+    return '{} {}'.format(y, m)
+
+
+def calc_time(sec, eng=False):
+    minutes = sec // 60
+    seconds = sec - minutes * 60
+    if eng:
+        return '{} min. {} sec.'.format(minutes, seconds)
+    return '{} мин. {} сек.'.format(minutes, seconds)
+
+
+
+GAMES_RU = {
+    '1': 'Сопоставления',
+    '2': 'Различения',
+    '3': 'Категории',
+    '4': 'Последовательности',
+    '5': 'Глаголы',
+}
+
+GAMES_EN = {
+    '1': 'Matching',
+    '2': 'Distinction',
+    '3': 'Categories',
+    '4': 'Sequences',
+    '5': 'Verbs',
+}
+
+
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @permission_classes((AllowAny,))
 def send_statistics(request, **kwargs):
     key = kwargs.get('key')
     token_obj = Token.objects.filter(key=key)
+    lang = request.GET.get('language', 'ru')
 
     if token_obj.exists():
         user = token_obj.get().user
@@ -328,42 +378,102 @@ def send_statistics(request, **kwargs):
         raise Http404
 
     if user.email:
-        statistic = []
+        attachment_csv_file = StringIO()
         if request.method == 'GET':
-            for child in user.child_set.all():
-                statistic += models.Statistic.objects.filter(child=child)
+            statistic = models.Statistic.objects.filter(child__in=user.child_set.all())
+            statistic_fieldnames = [field.name for field in models.Statistic._meta.fields
+                                    if field.name not in ['id', 'mistakes_count']]
+            writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
+            if lang == 'ru':
+                writer.writerow({
+                    'child': 'Имя',
+                    'game': 'Номер игры',
+                    'level': 'Уровень',
+                    'start_time': 'Время начала',
+                    'continuance': 'Продолжительность (в секундах)',
+                    'correct_percentage': 'Процент верно выполненных'
+                })
+            else:
+                writer.writerow({
+                    'child': 'Name',
+                    'game': 'Game number',
+                    'level': 'Level',
+                    'start_time': 'Start time',
+                    'continuance': 'Continuance',
+                    'correct_percentage': 'Progress, %'
+                })
+
+            for s in statistic:
+                row = {
+                    'child': s.child.name,
+                    'game': s.game,
+                    'level': s.level,
+                    'correct_percentage': s.correct_percentage
+                }
+                writer.writerow(row)
+
         elif request.method == 'POST':
             ids = request.data.get('id', None)
             if ids is None:
                 return Response(data={'detail': 'Missing ids'}, status=status.HTTP_400_BAD_REQUEST)
             statistic = models.Statistic.objects.filter(pk__in=ids)
 
-        attachment_csv_file = StringIO()
-        statistic_fieldnames = [field.name for field in models.Statistic._meta.fields
-                                if field.name not in ['id', 'mistakes_count']]
-        writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
-        writer.writerow({
-                'child': 'Имя',
-                'game': 'Номер игры',
-                'level': 'Уровень',
-                'start_time': 'Время начала',
-                'continuance': 'Продолжительность (в секундах)',
-                'correct_percentage': 'Процент верно выполненных'
-            })
+            writer = csv.writer(attachment_csv_file)
+            statistic_example = statistic.first()
+            child_name = statistic_example.child.name
+            game_number = statistic_example.game
 
-        for s in statistic:
-            row = {
-                'child': s.child.name,
-                'game': s.game,
-                'level': s.level,
-                'start_time': s.start_time,
-                'continuance': s.continuance,
-                'correct_percentage': s.correct_percentage
-            }
-            writer.writerow(row)
+            if lang == 'ru':
+                writer.writerow(
+                    ['Ребенок', '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday))])
+                writer.writerow(['Игра', GAMES_RU.get(str(game_number))])
+            else:
+                writer.writerow(
+                    ['Child', '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday, eng=True))])
+                writer.writerow(['Game', GAMES_EN.get(str(game_number))])
 
-        mail = EmailMessage('Статистика Kit-4-Kid', 'Здравствуйте.\n\nСтатистика игр по Вашим детям:\nИгра 1 - сопоставления,\nИгра 2 - Различения,\nИгра 3 - Категории,\nИгра 4 - Последовательности,\nИгра 5 - Глаголы\n\n\nС уважением,\nадминистрация Kit-4-Kid', 'info@kit-4-kid', (user.email,))
-        mail.attach('statistics.csv', attachment_csv_file.getvalue(), 'text/csv')
+            writer.writerow([])
+
+            statistic_fieldnames = ['date', 'time', 'level', 'correct_percentage']
+            writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
+
+            if lang == 'ru':
+                writer.writerow({
+                    'date': 'Дата',
+                    'time': 'Время',
+                    'level': 'Уровень',
+                    'correct_percentage': 'Пройдено, %',
+
+                })
+            else:
+                writer.writerow({
+                    'date': 'Date',
+                    'time': 'Time',
+                    'level': 'Level',
+                    'correct_percentage': 'Progress, %',
+                })
+
+            for s in statistic:
+                row = {
+                    'date': s.start_time.date(),
+                    'time': calc_time(s.continuance, lang == 'en'),
+                    'level': s.level,
+                    'correct_percentage': s.correct_percentage
+                }
+                writer.writerow(row)
+
+        else:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        if lang == 'ru':
+            msg = 'Здравствуйте.\n\nСтатистика игр по Вашему запросу во вложении.\n\n\n' \
+                  'С уважением,\nадминистрация Kit-4-Kid'
+        else:
+            msg = 'Hi.\n\nPlease, find your game statistics in the attachment.\n\n\n' \
+                  'Sincerely,\nKit-4-Kid administration'
+
+        mail = EmailMessage('Статистика Kit-4-Kid', msg, 'info@kit-4-kid', (user.email,))
+        mail.attach('statistics.csv', attachment_csv_file.getvalue().encode('utf-8-sig'), 'text/csv')
         mail.send(fail_silently=True)
         return Response(status=status.HTTP_200_OK)
     else:

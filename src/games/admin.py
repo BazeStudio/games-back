@@ -13,6 +13,7 @@ from . import models
 from django.contrib import messages
 from django.core.mail import EmailMessage
 import re
+from games.api.views import GAMES_RU
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
                     writer.writerow(row)
 
                 mail = EmailMessage('Статистика Kit-4-Kid',
-                                    'Здравствуйте.\n\nСтатистика игр по Вашим детям:\nИгра 1 - Сопоставления,\nИгра 2 - Различения,\nИгра 3 - Категории,\nИгра 4 - Последовательности,\nИгра 5 - Глаголы\n\n\nС уважением,\nадминистрация Kit-4-Kid',
+                                    'Здравствуйте.\n\nСтатистика игр по Вашему запросу во вложении.\n\n\nС уважением,\nадминистрация Kit-4-Kid',
                                     'info@kit-4-kid', (entered_email,))
                 mail.attach('statistics.csv', attachment_csv_file.getvalue(), 'text/csv')
                 mail.send(fail_silently=True)
@@ -190,7 +191,13 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 class StatisticAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
     search_fields = ('child__name__icontains',)
-    list_display = ('child', 'get_parent', 'game', 'level', 'correct_percentage',)
+    list_display = ('child', 'get_parent', 'own_game', 'level', 'correct_percentage',)
+
+    def own_game(self, obj):
+        try:
+            return '{} ({})'.format(obj.game, GAMES_RU[str(obj.game).lower()])
+        except Exception:
+            return obj.game
 
     def get_parent(self, obj):
         if obj.child.parent.name and obj.child.parent.surname:
@@ -777,8 +784,8 @@ class RuleAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
 @admin.register(models.Game_2_Obj_Level_1)
 class Game2Level1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
+    fields = ('description', 'description_eng', 'image_1', 'pic_1', 'image_2', 'pic_2',)
     search_fields = ('description', )
-    exclude = ('last_changed',)
 
     readonly_fields = ['pic_1', 'pic_2']
 
@@ -817,7 +824,7 @@ class Game2Level1Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
 @admin.register(models.Game_2_Obj_Level_2)
 class Game2Level2Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description',)
-    exclude = ('last_changed',)
+    fields = ('description', 'description_eng', 'image_1', 'pic_1', 'image_2', 'pic_2', 'image_3', 'pic_3', )
 
     readonly_fields = ['pic_1', 'pic_2', 'pic_3']
 
@@ -870,7 +877,8 @@ class Game2Level2Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
 @admin.register(models.Game_2_Obj_Level_3)
 class Game2Level3Admin(StaffRequiredAdminMixin, admin.ModelAdmin):
     search_fields = ('description',)
-    exclude = ('last_changed',)
+    fields = ('description', 'description_eng', 'image_1', 'pic_1', 'image_2', 'pic_2', 'image_3', 'pic_3',
+              'image_4', 'pic_4', 'image_5', 'pic_5', )
 
     readonly_fields = ['pic_1', 'pic_2', 'pic_3', 'pic_4', 'pic_5']
 
