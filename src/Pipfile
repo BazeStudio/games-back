@@ -32,6 +32,8 @@ google-cloud-storage = "*"
 vk = "*"
 django-admin-autocomplete-filter = "*"
 facebook-sdk = "*"
+xlsxwriter = "*"
+django-ses = "*"
 
 [requires]
 python_version = "3.6"

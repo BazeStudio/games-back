@@ -1,13 +1,18 @@
-import logging
-from datetime import datetime, timedelta, date
-from django.core.mail import send_mail, EmailMessage
 import csv
-from io import StringIO
-import hashlib, uuid
+import hashlib
+import logging
+import uuid
+from datetime import datetime, timedelta, date
+from io import BytesIO
+from random import randint
 
+import facebook
 import requests
+import vk
+import xlsxwriter
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail, EmailMessage
 from django.http import Http404
 from django.urls.exceptions import NoReverseMatch
 from django.views.decorators.csrf import csrf_exempt
@@ -17,15 +22,10 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
 from rest_framework.parsers import FormParser, MultiPartParser
-
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response, SimpleTemplateResponse
 from rest_framework.views import APIView
-from random import randint
-from django.db.models import Q
-import vk
-import facebook
 
 from games import models
 from . import serializers
@@ -197,7 +197,7 @@ def reset_password(request, **kwargs):
             send_sms(user.phone[1:], 'Kit4Kid new password: %s' % new_password)
         elif user.email and send_type == 'email':
             send_mail('Смена пароля Kit-4-Kid', 'Kit4Kid new password: %s' % new_password,
-                      'info@kit-4-kid', (user.email,), fail_silently=False)
+                      'info@kit-4-kid.com', (user.email,), fail_silently=False)
         else:
             return Response({"detail": "User doesn't have phone number"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -323,9 +323,12 @@ def calculate_age(born: date, eng=False):
     if eng:
         return '{} years {} months'.format(years, months)
 
-    if int(str(years)[-1]) == 1:
+    if 11 <= years <= 20:
+        y = '{} лет'.format(years)
+
+    elif int(str(years)[-1]) == 1:
         y = '{} год'.format(years)
-    elif int(str(years)[-1]) in [2, 3, 4, 5]:
+    elif int(str(years)[-1]) in [2, 3, 4]:
         y = '{} года'.format(years)
     else:
         y = '{} лет'.format(years)
@@ -344,7 +347,6 @@ def calc_time(sec, eng=False):
     if eng:
         return '{} min. {} sec.'.format(minutes, seconds)
     return '{} мин. {} сек.'.format(minutes, seconds)
-
 
 
 GAMES_RU = {
@@ -378,39 +380,40 @@ def send_statistics(request, **kwargs):
         raise Http404
 
     if user.email:
-        attachment_csv_file = StringIO()
+        attachment_file = BytesIO()
+        workbook = xlsxwriter.Workbook(attachment_file)
+        date_format = workbook.add_format({'num_format': 'd mmmm  yyyy'})
+        bold = workbook.add_format({'bold': True})
+
+        worksheet = workbook.add_worksheet()
+        worksheet.set_column('A:D', 30)
+
         if request.method == 'GET':
             statistic = models.Statistic.objects.filter(child__in=user.child_set.all())
-            statistic_fieldnames = [field.name for field in models.Statistic._meta.fields
-                                    if field.name not in ['id', 'mistakes_count']]
-            writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
-            if lang == 'ru':
-                writer.writerow({
-                    'child': 'Имя',
-                    'game': 'Номер игры',
-                    'level': 'Уровень',
-                    'start_time': 'Время начала',
-                    'continuance': 'Продолжительность (в секундах)',
-                    'correct_percentage': 'Процент верно выполненных'
-                })
-            else:
-                writer.writerow({
-                    'child': 'Name',
-                    'game': 'Game number',
-                    'level': 'Level',
-                    'start_time': 'Start time',
-                    'continuance': 'Continuance',
-                    'correct_percentage': 'Progress, %'
-                })
 
-            for s in statistic:
-                row = {
-                    'child': s.child.name,
-                    'game': s.game,
-                    'level': s.level,
-                    'correct_percentage': s.correct_percentage
-                }
-                writer.writerow(row)
+            if lang == 'ru':
+                worksheet.write(0, 0, 'Имя')
+                worksheet.write(0, 1, 'Номер игры')
+                worksheet.write(0, 2, 'Уровень')
+                worksheet.write(0, 3, 'Время начала')
+                worksheet.write(0, 4, 'Продолжительность (в секундах)')
+                worksheet.write(0, 5, 'Процент верно выполненных')
+
+            else:
+                worksheet.write(0, 0, 'Name')
+                worksheet.write(0, 1, 'Game number')
+                worksheet.write(0, 2, 'Level')
+                worksheet.write(0, 3, 'Start time')
+                worksheet.write(0, 4, 'Continuance (sec.)')
+                worksheet.write(0, 5, 'Progress, %')
+
+            for row, s in enumerate(statistic, 1):
+                for col, item in enumerate([s.child.name, s.game, s.level, s.start_time.date(),
+                                            s.continuance, s.correct_percentage]):
+                    if col == 3:
+                        worksheet.write(row, col, item, date_format)
+                    else:
+                        worksheet.write(row, col, item)
 
         elif request.method == 'POST':
             ids = request.data.get('id', None)
@@ -418,52 +421,45 @@ def send_statistics(request, **kwargs):
                 return Response(data={'detail': 'Missing ids'}, status=status.HTTP_400_BAD_REQUEST)
             statistic = models.Statistic.objects.filter(pk__in=ids)
 
-            writer = csv.writer(attachment_csv_file)
             statistic_example = statistic.first()
             child_name = statistic_example.child.name
             game_number = statistic_example.game
 
             if lang == 'ru':
-                writer.writerow(
-                    ['Ребенок', '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday))])
-                writer.writerow(['Игра', GAMES_RU.get(str(game_number))])
+                worksheet.write(0, 0, 'Ребенок', bold)
+                worksheet.write(0, 1, '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday)), bold)
+                worksheet.write(1, 0, 'Игра', bold)
+                worksheet.write(1, 1, GAMES_RU.get(str(game_number)), bold)
             else:
-                writer.writerow(
-                    ['Child', '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday, eng=True))])
-                writer.writerow(['Game', GAMES_EN.get(str(game_number))])
-
-            writer.writerow([])
-
-            statistic_fieldnames = ['date', 'time', 'level', 'correct_percentage']
-            writer = csv.DictWriter(attachment_csv_file, fieldnames=statistic_fieldnames)
+                worksheet.write(0, 0, 'Child', bold)
+                worksheet.write(0, 1, '{} {}'.format(child_name, calculate_age(statistic_example.child.birthday, eng=True)), bold)
+                worksheet.write(1, 0, 'Game', bold)
+                worksheet.write(1, 1, GAMES_EN.get(str(game_number)), bold)
 
             if lang == 'ru':
-                writer.writerow({
-                    'date': 'Дата',
-                    'time': 'Время',
-                    'level': 'Уровень',
-                    'correct_percentage': 'Пройдено, %',
-
-                })
+                worksheet.write(3, 0, 'Дата', bold)
+                worksheet.write(3, 1, 'Время', bold)
+                worksheet.write(3, 2, 'Уровень', bold)
+                worksheet.write(3, 3, 'Пройдено, %', bold)
             else:
-                writer.writerow({
-                    'date': 'Date',
-                    'time': 'Time',
-                    'level': 'Level',
-                    'correct_percentage': 'Progress, %',
-                })
+                worksheet.write(3, 0, 'Date', bold)
+                worksheet.write(3, 1, 'Time', bold)
+                worksheet.write(3, 2, 'Level', bold)
+                worksheet.write(3, 3, 'Progress, %', bold)
 
-            for s in statistic:
-                row = {
-                    'date': s.start_time.date(),
-                    'time': calc_time(s.continuance, lang == 'en'),
-                    'level': s.level,
-                    'correct_percentage': s.correct_percentage
-                }
-                writer.writerow(row)
+            for row, s in enumerate(statistic, 4):
+                for col, item in enumerate([s.start_time.date(), calc_time(s.continuance, lang == 'en'),
+                                            s.level, s.correct_percentage]):
+                    if col == 0:
+                        worksheet.write_datetime(row, col, item, date_format)
+                    else:
+                        worksheet.write(row, col, item)
 
         else:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        workbook.close()
+        attachment_file.seek(0)
 
         if lang == 'ru':
             msg = 'Здравствуйте.\n\nСтатистика игр по Вашему запросу во вложении.\n\n\n' \
@@ -472,8 +468,9 @@ def send_statistics(request, **kwargs):
             msg = 'Hi.\n\nPlease, find your game statistics in the attachment.\n\n\n' \
                   'Sincerely,\nKit-4-Kid administration'
 
-        mail = EmailMessage('Статистика Kit-4-Kid', msg, 'info@kit-4-kid', (user.email,))
-        mail.attach('statistics.csv', attachment_csv_file.getvalue().encode('utf-8-sig'), 'text/csv')
+        mail = EmailMessage('Статистика Kit-4-Kid', msg, 'info@kit-4-kid.com', (user.email,))
+        mail.attach('statistics.xlsx', attachment_file.getvalue(),
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         mail.send(fail_silently=True)
         return Response(status=status.HTTP_200_OK)
     else:

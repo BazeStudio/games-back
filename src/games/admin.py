@@ -124,7 +124,7 @@ class UserAdmin(StaffRequiredAdminMixin, admin.ModelAdmin):
 
                 mail = EmailMessage('Статистика Kit-4-Kid',
                                     'Здравствуйте.\n\nСтатистика игр по Вашему запросу во вложении.\n\n\nС уважением,\nадминистрация Kit-4-Kid',
-                                    'info@kit-4-kid', (entered_email,))
+                                    'info@kit-4-kid.com', (entered_email,))
                 mail.attach('statistics.csv', attachment_csv_file.getvalue(), 'text/csv')
                 mail.send(fail_silently=True)
 

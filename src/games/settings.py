@@ -91,12 +91,13 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', )
 }
 
-EMAIL_HOST = 'mail.nic.ru'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'info@kit-4-kid.com'
-EMAIL_HOST_PASSWORD = 'xS1f3ASehZ'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+AWS_ACCESS_KEY_ID = 'AKIAVOOOS3SAIZMICZV6'
+AWS_SECRET_ACCESS_KEY = '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'
+EMAIL_BACKEND = 'django_ses.SESBackend'
+
+AWS_SES_REGION_NAME = 'eu-west-1'
+AWS_SES_REGION_ENDPOINT = 'email.eu-west-1.amazonaws.com'
 
 ADMIN_REORDER = (
 
